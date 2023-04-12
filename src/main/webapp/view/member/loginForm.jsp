@@ -10,17 +10,22 @@
 </head>
 <body>
 <form action="login" method="post" name="f" onsubmit="return input_check(this)">
-	<table><caption>로그인</caption>
-	<tr><th>아이디</th><td><input type="text" name="id"></td></tr>
-	<tr><th>비밀번호</th><td><input type="password" name="pass"></td></tr>
-	<tr><td colspan="2">
-		<input type="submit" value="로그인">
-		<input type="button" value="회원가입" onclick="location.href='joinForm'">
-		<input type="button" value="아이디찾기" onclick="win_open('idForm')">
-		<input type="button" value="비밀번호찾기" onclick="win_open('pwForm')">
-		</td></tr>
-		
-	</table>
+<div class="container">
+	<h2 id="center">로그인</h2>
+	<div class="form-group">
+		<label for="usr">ID:</label>
+		<input type="text" class="form-control" id="usr" name="id">
+		<label for="pwd">Password:</label>
+		<input type="password" class="form-control" id="pwd" name="pass">
+	</div>
+	<div id="center" style="padding: 3px">
+		<button type="submit" class="btn btn-dark">로그인</button>
+		<button type="button" onclick="win_open('idForm')"
+								class="btn btn-dark">아이디찾기</button>
+		<button type="button" onclick="win_open('pwForm')"
+								class="btn btn-dark">비밀번호찾기</button>
+	</div>
+</div>
 </form>
 <script type="text/javascript">
 	function win_open(page){
