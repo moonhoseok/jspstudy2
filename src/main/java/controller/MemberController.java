@@ -1,11 +1,16 @@
 package controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.oreilly.servlet.MultipartRequest;
 
 import gdu.mskim.MSLogin;
 import gdu.mskim.MskimRequestMapping;
@@ -23,6 +28,11 @@ public class MemberController extends MskimRequestMapping{
 	//로그인 검증. id 파라미터와 로그인정보 검증
 	public String loginIdCheck(HttpServletRequest request, 
 			HttpServletResponse response) {
+		try {
+			request.setCharacterEncoding("utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		String id = request.getParameter("id");
 		String login=(String)request.getSession().getAttribute("login");
 		if(login ==null) {
@@ -31,6 +41,21 @@ public class MemberController extends MskimRequestMapping{
 			return "alert";
 		}else if(!login.equals("admin")&& !id.equals(login)) {
 			request.setAttribute("msg", "본인만 거래 가능합니다.");
+			request.setAttribute("url", "main");
+			return "alert";
+		}
+		return null;
+	}
+	
+	public String loginAdminCheck(HttpServletRequest request, 
+			HttpServletResponse response) {
+		String login=(String)request.getSession().getAttribute("login");
+		if(login ==null) {
+			request.setAttribute("msg", "로그인하세요");
+			request.setAttribute("url", "loginForm");
+			return "alert";
+		}else if(!login.equals("admin")) {
+			request.setAttribute("msg", "관리자만 가능합니다.");
 			request.setAttribute("url", "main");
 			return "alert";
 		}
@@ -248,18 +273,193 @@ public class MemberController extends MskimRequestMapping{
 		String msg = null;
 		String url = null;
 		if(id.equals("admin")) {
-			request.setAttribute("msg", msg);
-			request.setAttribute("url", url);
+			request.setAttribute("msg", "관리자는 탈퇴 불가능");
+			request.setAttribute("url", "list");
 			return "alert";
 		}
-		Member dbmem = dao.selectOne(login);
+		//MemberDao dao = new MemberDao();
+		Member dbmem = dao.selectOne(login); //로그인된 사용자의 비밀번호로 검증
 		if(!pass.equals(dbmem.getPass())) {
+			request.setAttribute("msg", "비밀번호가 틀립니다.");
+			request.setAttribute("url", "deleteForm?id="+id);
+			return "alert";
+		}//비밀번호 일치 => 고객정보삭제
+		if(dao.delete(id)) { //삭제성공
+			msg=id+"고객님 탈퇴성공";
+			if(login.equals("admin")){//관리자
+				url="list";
+			}else {//일반사용자
+				request.getSession().invalidate(); //세션변경 로그아웃
+				url="loginForm";
+			}
+		}else { // 삭제 실패 
+			msg=id+"고객님 탈퇴 실패";
+			if(login.equals("admin")) url="list";
+			else					 url="info?id="+id;
+		}
+		request.setAttribute("msg", msg);
+		request.setAttribute("url", url);
+		return "alert";	
+	}
+	
+/*
+ *     	1. 관리자만 사용가능 페이지 => 검증
+    		- 로그아웃상태 : 로그인이 필요합니다. 메세지 출력 후 loginForm.jsp로 이동
+    		- 로그인 상태 : 일반사용자 로그인시 "관리자만 가능합니다." 메세지 출력 후
+    					main.jsp 페이지로 이동
+    	2. DB에서 모든 회원 정보를 조회. List<Member> 객체로 리턴
+    		List<Member> MemberDao.list()
+    	3. List객체를 화면에 전달
+
+ */
+		@RequestMapping("list")
+		@MSLogin("loginAdminCheck")
+		public String list(HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+			List<Member> list = dao.list();
+			request.setAttribute("list", list);
+			return "member/list";
+		}
+		/*
+		 * 	1. 이미지파일 업로드, request객체 사용불가
+			이미지파일 업로드의 위치 : 현재 URL/picture 폴더로 설정
+			2. opener화면에 결과 전달 => javascript
+			3. 현재화면 close() => javascript
+		 */
+		@RequestMapping("picture")
+		public String picture(HttpServletRequest request,
+				HttpServletResponse response) {
+			//request.getServletContext() : application 객체
+			//request.getServletContext().getRealPath("/") : 실제 웹어플리케이션 경로
+			String path = request.getServletContext().getRealPath("/")
+													+"/picture/";
+			String fname = null;
+			File f = new File(path);
+			if(!f.exists()){ f.mkdir(); } // 업로드 폴더가 없는 경우 폴더생성
+			
+			MultipartRequest multi = null;
+			try {
+				//request	: 요청객체. 파라미터, 파일의내용, 파일이름
+				//path		: 업로드된 파일이 저장될 폴더
+				//10*1024*1024 : 업로드 파일의 최대 크기 바이트수 10MB최대크기
+				//utf-8 : 인코딩
+				multi = new MultipartRequest
+								(request,path,10*1024*1024,"utf-8");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			fname = multi.getFilesystemName("picture"); //업로드된 파일의 이름
+			request.setAttribute("fname", fname);
+			return "member/picture"; 
+		}
+		//중복체크
+		@RequestMapping("idchk")
+		public String idchk(HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+			String id = request.getParameter("id");
+			Member mem = new MemberDao().selectOne(id);
+			String msg=null;
+			boolean able = true;
+			if(mem == null) {
+				msg="사용가능한 아이디입니다";
+			}else {
+				msg="사용중인 아이디입니다.";
+				able = false;
+			}
+			request.setAttribute("able",able);
+			request.setAttribute("msg",msg);
+			return "member/idchk";
+		}
+		
+		@RequestMapping("id")
+		public String id(HttpServletRequest request, 
+				HttpServletResponse response) throws Exception {
+			request.setCharacterEncoding("utf-8");
+			String tel = request.getParameter("tel");
+			String email = request.getParameter("email");
+			String id = dao.idSearch(email, tel);
+			if(id != null) {
+				String showId = id.substring(0,id.length()-2);
+				request.setAttribute("id", showId);
+				return"member/id";
+			}else {
+				request.setAttribute("msg", "아이디를 찾을 수 없습니다.");
+				request.setAttribute("url", "idForm");
+				return "alert";
+			}
+
+		}
+		
+		@RequestMapping("pw")
+		public String pw(HttpServletRequest request, 
+				HttpServletResponse response) throws Exception {
+			request.setCharacterEncoding("utf-8");
+			String tel = request.getParameter("tel");
+			String email = request.getParameter("email");
+			String id = request.getParameter("id");
+			String pw = dao.pwSearch(id,email, tel);
+			if(pw != null) {
+				String showPw = pw.substring(0,pw.length()-2);
+				request.setAttribute("pw", "회원 비밀번호 :" +showPw);
+				return "member/pw";
+			}else {
+				request.setAttribute("msg", "비밀번호를 찾을 수 없습니다.");
+				request.setAttribute("url", "pwForm");
+				return "alert";
+			}
+		}
+		//비밀번호변경
+		/*
+		 *  1. 파라미터저장 (pass, chgpass)
+			
+			2. 비밀번호검증 : 현재 비밀번호로 비교
+						비밀번호오류 : 비밀번호오류 메세지 출력 후 passwordForm.jsp로 이동
+			3. 비밀번호일치 : DB에 비밀번호 수정
+					boolean MemberDao.updatePass(id, 변경비밀번호 )
+					- 수정성공 : 성공메세지 출력 후 로그아웃하고 loginForm.jsp로 이동. 현제페이지 닫기 
+								//opener페이지 info.jsp로 이동. 현제페이지닫기
+					- 수정실패 : 실패메세지 출력 후 opener페이지 updateForm.jsp로 이동. 현제페이지닫기	
+		 */
+		@RequestMapping("password")
+		public String password(HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+			String pass = request.getParameter("pass");
+			String chgpass = request.getParameter("chgpass");
+			String login = (String)request.getSession().getAttribute("login");
+			Member mem = dao.selectOne(login);
+			boolean oepner = true;
+			String msg = null;
+			String url = null;
+			if(login==null) {
+				msg="로그인하세요";
+				url="loginForm";
+				oepner = true;
+			}else {
+				if(mem.getPass().equals(pass)) {
+					if(dao.updatePass(login, chgpass)) {
+						//msg = "비밀번호가 변경되었습니다";
+						//url = "info.jsp?id=" + login;
+						msg = "비밀번호가 변경되었습니다 \\n  다시로그인 하세요";
+						request.getSession().invalidate(); //세션변경 로그아웃
+						url = "loginForm";
+						oepner = true;
+					}else {
+						msg = "비밀번호가 변경시 오류발생";
+						url = "updateForm?id=" + login;
+						oepner = true;
+					}
+				}else { //비번 오류
+					msg = "비밀번호 오류입니다.";
+				    url = "passwordForm";
+					oepner = false;
+				}
+			}
+			request.setAttribute("msg", msg);
+			request.setAttribute("url", url);
+			request.setAttribute("oepner", oepner);
+			return "member/password";
 			
 		}
-			
-		
-		return "member/deleteForm";
-	}
 }	
 
 

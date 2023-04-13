@@ -30,9 +30,15 @@
 		var op = "width=500, height=500, left=50, top=50";
 		open("pictureForm","",op);
 	}
-	function win_open(page){
-		let op = "width=350, height=350, left=50, top=150"
-		open(page,"",op)
+	function idchk(){
+		let id = document.f.id.value;
+		if(id ==""){
+			alert("아이디 입력하셈");
+			f.id.focus();
+		}else{
+			let op = "width=350, height=350, left=50, top=150"
+			open("idchk?id="+id,"",op)
+		}
 	}
 
 </script>
@@ -43,13 +49,16 @@
 <div class="container">
 	<h2 id="center">회원가입</h2>
 	<div class="row">
-		<div class="col-3 bg-light">
-			<img src="" width="100" height="120" id="pic">
+		<div class="col-3 bg-light" id="center">
+			<img src="" width="95%" height="200" id="pic"><br>
+			<font size="1"><a href="javascript:win_upload()">사진등록</a></font>
 		</div>
 		<div class="col-9">
 			<div class="form-group">
 				<label for="id">아이디 :</label><input type="text"
 					class="form-control" name="id">
+					<button type="button" onclick="idchk()"
+					class="btn btn-dark">중복체크</button><br>
 				<label for="pwd">비밀번호 :</label><input type="password"
 					class="form-control" name="pass">
 				<label for="name">이름 :</label><input type="text"

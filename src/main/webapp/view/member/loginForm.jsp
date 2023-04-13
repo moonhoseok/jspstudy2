@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-    <%--/jspstudy1/src/main/webapp/view/member/loginForm.jsp --%>
+    <%--/jspstudy2/src/main/webapp/view/member/loginForm.jsp --%>
 <!DOCTYPE html>
 <!-- 주석처리 -->
 <html>

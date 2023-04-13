@@ -31,8 +31,15 @@ public class BookController extends MskimRequestMapping {
 		b.setWriter(request.getParameter("writer"));
 		b.setTitle(request.getParameter("title"));
 		b.setContent(request.getParameter("content"));
-		dao.insert(b);
-		request.setAttribute("book", b);
-		return "/book/test1";
+		if(dao.insert(b)) {
+			Book dbbook =dao.selectOne(b.getWriter());
+			request.setAttribute("book", dbbook);
+			return "/book/test1";
+		}else {
+			request.setAttribute("msg","방명록 등록시 오류발생");
+			request.setAttribute("url","testForm");
+			return "alert";
+		}
+		
 	}
 }
