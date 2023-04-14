@@ -12,10 +12,12 @@
 <body>
 <div class="container">
 <h2 id="center">회원목록</h2>
+<form action="mailForm" name="f" method="post">
 <table class="table table=hover">
 	<tr>
-		<th>아이디</th><th>사진</th><th>이름</th><th>성별</th><th>전화</th>
-		<th>&nbsp;</th><th><input type="checkbox" name="box" onclick="selectAll(this)"></th>
+		<th>아이디</th><th>사진</th><th>이름</th>
+		<th>성별</th><th>전화</th><th>&nbsp;</th>
+		<th><input type="checkbox" name="box" onclick="selectAll(this)"></th>
 	</tr>
 
 	<c:forEach var="m" items="${list}">
@@ -29,14 +31,14 @@
 			<a href ="deleteForm?id=${m.id }">강제 탈퇴</a>
 				</c:if>
 		</td>
-		<td><input type="checkbox" name="box"></td>
+		<td><input type="checkbox" name="box" class="chk" value="${m.id}"></td>
 	</tr>	 
 	</c:forEach>
-	
 </table>
 	<div class="text-center">
-		<button type="button" class="btn btn-dark" style="float-center">메일보내기</button>
+		<button type="submit" class="btn btn-dark" >메일보내기</button>
 	</div>
+</form>
 </div>
 <script type="text/javascript">
 function selectAll(selectAll)  {
@@ -46,7 +48,19 @@ function selectAll(selectAll)  {
 	  chk.forEach((checkbox) => {
 	    checkbox.checked = selectAll.checked;
 	  })
+}
+<%--
+function select(selectAll){
+	if(box.checked){
+		document.querySelectorAll(".idchk").forEach((idchk)=>{
+			idchk.setAttribute("checked","checked")
+		})
+	}else{
+		document.querySelectorAll(".idchk").forEach((idchk)=>{
+			idchk.removeAttribute("checked","checked")
 	}
+}
+	--%>
 </script>
 </body>
 </html>

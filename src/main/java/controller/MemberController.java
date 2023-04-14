@@ -1,10 +1,24 @@
 package controller;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +50,7 @@ public class MemberController extends MskimRequestMapping{
 		String id = request.getParameter("id");
 		String login=(String)request.getSession().getAttribute("login");
 		if(login ==null) {
-			request.setAttribute("msg", "로그인하세요");
+			request.setAttribute("msg", "로그인하세요1");
 			request.setAttribute("url", "loginForm");
 			return "alert";
 		}else if(!login.equals("admin")&& !id.equals(login)) {
@@ -435,15 +449,15 @@ public class MemberController extends MskimRequestMapping{
 				url="loginForm";
 				oepner = true;
 			}else {
-				if(mem.getPass().equals(pass)) {
-					if(dao.updatePass(login, chgpass)) {
+				if(mem.getPass().equals(pass)) {//등록비밀번호 입력비밀번호 일치
+					if(dao.updatePass(login, chgpass)) { //비번 수정
 						//msg = "비밀번호가 변경되었습니다";
 						//url = "info.jsp?id=" + login;
 						msg = "비밀번호가 변경되었습니다 \\n  다시로그인 하세요";
 						request.getSession().invalidate(); //세션변경 로그아웃
 						url = "loginForm";
 						oepner = true;
-					}else {
+					}else { //변경실패
 						msg = "비밀번호가 변경시 오류발생";
 						url = "updateForm?id=" + login;
 						oepner = true;
@@ -460,7 +474,135 @@ public class MemberController extends MskimRequestMapping{
 			return "member/password";
 			
 		}
+		@RequestMapping("passworeForm")
+		@MSLogin("loginIdCheck")
+		public String passworeForm(HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+			
+			return "member/password";
+		}
+		/*
+		 * 네이버 smtp 서버 이용하기 샌드메일트랜스퍼프로토콜
+		 * 1. 네이버 2단계 로그인 해제
+		 * 2. SMTP 서버 사용 설정 => 네이버메일
+		 * 3. lms에 mail.properties 다운받기
+		 * 4. mvnrepository.com 접속
+		 * 5. mail 검색=> javax.mail => mail-1.4.7.jar 다운받기
+		 * 		activation검색 => javax.activation » activation 선택
+		 * 			=> activation-1.1.1.jar 다운
+		 * WEB-INF/lib 2개의 jar파일 붙여넣기
+		 */
+		@RequestMapping("mailForm")   
+		@MSLogin("loginAdminCheck")
+		public String mailForm(HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+			String[] ids = request.getParameterValues("box");
+			List<Member> list = dao.selectEmail(ids);
+			request.setAttribute("list", list);
+			return "member/mailForm";
+		}
+		
+		@RequestMapping("mailSend")   
+		@MSLogin("loginAdminCheck")
+		public String mailSend(HttpServletRequest request,
+				HttpServletResponse response) throws UnsupportedEncodingException {
+			request.setCharacterEncoding("utf-8");
+			String sender = request.getParameter("naverid");
+			String pass = request.getParameter("naverpw");
+			String recipient = request.getParameter("recipient");
+			String title = request.getParameter("title");
+			String content = request.getParameter("content");
+			String mtype = request.getParameter("mtype");
+			/*
+			 * Properties 클래스 : Hashtable(Map구현 클래스)의 하위클래스
+			 * 				(key(String),value(String))
+			 * 				=> 제네릭표현안함<>
+			 * prop : 메일 전송을 위한 환경설정 객체
+			 */
+			Properties prop = new Properties();
+			try {
+				FileInputStream fis = 
+					new FileInputStream("C:/html/workspace/jspstudy2/mail.properties");
+				prop.load(fis); // key = value 으로 읽어서 Map객체로 저장
+				prop.put("mail.stmp.user", sender);
+				System.out.println(prop);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//메일 전송 전에 인증객체 생성=> 네이버인증
+			MyAuthenticator auth = new MyAuthenticator(sender,pass); //인증객체
+			// 메일전송을 위한 연결 객체
+			Session session = Session.getInstance(prop,auth);
+			//Message 객체 준비 : 메일의 내용을 저장하는 객체
+			MimeMessage msg = new MimeMessage(session);
+			List<InternetAddress> addrs = new ArrayList<InternetAddress>();
+			try {
+				String[] emails = recipient.split(",");
+				for(String email : emails) {
+					try {
+						//수신인 이름에 한글을 꺠지지 않도록 주소값 변경
+						addrs.add(new InternetAddress
+								(new String(email.getBytes("utf-8"),"8859_1")));
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+				}
+				InternetAddress[] address = new InternetAddress[emails.length];
+				for(int i=0; i<addrs.size(); i++) {
+					address[i] = addrs.get(i);
+				}
+				// 보내는사람 이메일 주소 설정
+				InternetAddress from = new InternetAddress(sender+"@naver.com");
+				//보내는 사람 이메일 주소
+				msg.setFrom(from);  
+				//받는사람 이메일 주소 설정
+				msg.setRecipients(Message.RecipientType.TO, address);
+				// 메일 제목
+				msg.setSubject(title);
+				// 전송 시간
+				msg.setSentDate(new Date());
+				// 메일 내용
+				msg.setText(content);
+				//
+				MimeMultipart multipart = new MimeMultipart();
+				//
+				MimeBodyPart body = new MimeBodyPart();
+				body.setContent(content, mtype);
+				multipart.addBodyPart(body);
+				msg.setContent(multipart);
+				Transport.send(msg); // 메일전송
+				//메일전송
+			} catch (MessagingException me) {
+				System.out.println(me.getMessage());
+				me.printStackTrace();
+			}
+			return "redirect:list";
+		}
+		
+		public final class MyAuthenticator extends Authenticator{
+			private String id;
+			private String pw;
+			public MyAuthenticator(String id, String pw) {
+				this.id = id;
+				this.pw = pw;
+			}
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(id,pw);
+			}
+		}
 }	
+
+
+ 
+
+
+
+
+
+
+
+
+
 
 
 
