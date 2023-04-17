@@ -15,7 +15,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
 html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+#d{background-color: w3-blue;}
+
 </style>
+<script type="text/javascript"
+	src="http://cdn.ckeditor.com/4.5.7/full/ckeditor.js">
+</script>
 <sitemesh:write property="head"/> 
 </head>
 
@@ -54,14 +59,15 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
   <hr>
 
   <div class="w3-bar-block">
-    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>&nbsp; Close Menu</a>
-    <a href="${path }/member/main" class="w3-bar-item w3-button w3-padding w3-blue">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu">
+    	<i class="fa fa-remove fa-fw"></i>&nbsp; Close Menu</a>
+    <a href="${path }/member/main" class="w3-bar-item w3-button w3-padding" >
     	<i class="fa fa-users fa-fw"></i>&nbsp; 회원관리</a>
-    <a href="${path}/board/list?boardid=1" class="w3-bar-item w3-button w3-padding">
+    <a href="${path}/board/list?boardid=1" class="w3-bar-item w3-button w3-padding w3-blue" id="d">
     	<i class="fa fa-eye fa-fw"></i>&nbsp; 공지사항</a>
-    <a href="${path}/board/list?boardid=2" class="w3-bar-item w3-button w3-padding">
+    <a href="${path}/board/list?boardid=2" class="w3-bar-item w3-button w3-padding" id="d">
     	<i class="fa fa-users fa-fw"></i>&nbsp; 자유게시판</a>
-    <a href="${path}/board/list?boardid=3" class="w3-bar-item w3-button w3-padding">
+    <a href="${path}/board/list?boardid=3" class="w3-bar-item w3-button w3-padding" id="d">
     	<i class="fa fa-bullseye fa-fw"></i>&nbsp; QnA</a>
   </div>
 </nav>
@@ -114,6 +120,9 @@ function w3_open() {
 function w3_close() {
   mySidebar.style.display = "none";
   overlayBg.style.display = "none";
+}
+function w3-blue(){
+	overlatBg.style.display === 'blue'
 }
 </script>
 

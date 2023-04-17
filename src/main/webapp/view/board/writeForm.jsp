@@ -46,7 +46,8 @@
 	<tr><td>글쓴이</td><td><input type="text" name="writer" class="w3-input"></td></tr>
 	<tr><td>비밀번호</td><td><input type="password" name="pass" class="w3-input"></td></tr>
 	<tr><td>제목</td><td><input type="text" name="title" class="w3-input"></td></tr>
-	<tr><td>내용</td><td><textarea rows="15" name="content" class="w3-input"></textarea></td></tr>
+	<tr><td>내용</td><td><textarea rows="15" name="content" class="w3-input" id="content"></textarea></td></tr>
+	<script>CKEDITOR.replace("content")</script>
 	<tr><td>첨부파일</td><td><input type="file" name="file1" class="w3-input"></td></tr>
 	<tr><td colspan="2">
 		<a href="javascript:inputcheck()" >[게시물등록]</a></td></tr>

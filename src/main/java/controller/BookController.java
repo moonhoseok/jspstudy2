@@ -1,5 +1,6 @@
 package controller;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
@@ -41,5 +42,13 @@ public class BookController extends MskimRequestMapping {
 			return "alert";
 		}
 		
+	}
+	
+	@RequestMapping("testlist")
+	public String testlist(HttpServletRequest request ,
+			HttpServletResponse response ) {
+	    List<Book> list = dao.list();  
+	    request.setAttribute("list",list);
+        return "book/testlist";// /view/book/testlist.jsp 를 뷰로 요청
 	}
 }
