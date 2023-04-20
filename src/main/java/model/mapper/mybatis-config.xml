@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+XML 작성 규칙
+/jspstudy2/src/main/java/model/mapper/mybatis-config.xml
+mapper 패키지 생성
+mybatis-config.xml 파일로 생성	
+-->
+<!DOCTYPE configuration PUBLIC "-//mabatis.org/DTD config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration> <!--루트태그 -->
+	<properties resource="model/mapper/mybatis.properties"/>
+	
+	<!--  Connection 객체   -->
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC"/>
+			<!-- Connection 타입 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="${driver}"/>
+				<property name="url" value="${url}"/>
+				<property name="username" value="${username}"/>
+				<property name="password" value="${password}"/>
+			</dataSource>
+		</environment>
+	</environments>	
+	<!-- sql 구문을 가진 파일 목록 -->
+	<mappers>
+		<package name="model.mapper"/><!-- model.mapper 패키지의 인터페이스들을 sql구문으로 등록 -->
+	</mappers>
+</configuration>

@@ -57,8 +57,11 @@
 		</tr>
 		<tr>
 			<td colspan="2">
-				<textarea rows="10" cols="40" class="form-control" name="content">
+				<textarea rows="10" cols="40" class="form-control" name="content" id="content">
 				</textarea>
+				<script>
+					CKEDITOR.replace("content")
+				</script>
 			</td>
 		</tr>
 		<tr>

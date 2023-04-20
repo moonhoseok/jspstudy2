@@ -28,11 +28,11 @@
 			f.title.focus();
 			return false;
 		}
-		if(f.content.value.trim() ==""){
+	/* 	if(f.content.value.trim() ==""){
 			alert("내용을 입력하세요.")
 			f.content.focus();
 			return false;
-		}
+		} 에디터에서 에러 */ 
 		f.submit();// submit 발생=> form의 action페이지로 요청
 	}
 </script>
@@ -47,7 +47,13 @@
 	<tr><td>비밀번호</td><td><input type="password" name="pass" class="w3-input"></td></tr>
 	<tr><td>제목</td><td><input type="text" name="title" class="w3-input"></td></tr>
 	<tr><td>내용</td><td><textarea rows="15" name="content" class="w3-input" id="content"></textarea></td></tr>
-	<script>CKEDITOR.replace("content")</script>
+	<%--
+		http://localhost:8080/jspstudy2/board/writerForm
+		http://localhost:8080/jspstudy2/board/imgupload 요청 
+	--%>
+	<script>CKEDITOR.replace("content",{
+		filebrowserImageUploadUrl : "imgupload"
+	})</script>
 	<tr><td>첨부파일</td><td><input type="file" name="file1" class="w3-input"></td></tr>
 	<tr><td colspan="2">
 		<a href="javascript:inputcheck()" >[게시물등록]</a></td></tr>

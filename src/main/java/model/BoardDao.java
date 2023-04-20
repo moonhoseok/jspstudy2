@@ -94,8 +94,10 @@ public class BoardDao {
     	 			
     	 		=> 조회되는 페이지에 맞는 레코드를 저장
     	*/
-    	String sql = "select * from board where boardid=?"
-    			+"order by grp desc, grpstep asc limit ?,?";
+    	String sql = "select * ,"
+    			+"(select count(*) from comment c where c.num= b.num) commcnt "
+    			+" from board b where boardid=? "
+    			+" order by grp desc, grpstep asc limit ?,? ";
     	try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, boardid);
@@ -116,6 +118,7 @@ public class BoardDao {
 				b.setReadcnt(rs.getInt("readcnt"));
 				b.setRegdate(rs.getTimestamp("regdate"));
 				b.setBoardid(rs.getString("boardid"));
+				b.setCommcnt(rs.getInt("commcnt"));
 				list.add(b);
 			}
 			System.out.println(list);

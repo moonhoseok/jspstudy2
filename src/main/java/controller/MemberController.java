@@ -30,14 +30,14 @@ import gdu.mskim.MSLogin;
 import gdu.mskim.MskimRequestMapping;
 import gdu.mskim.RequestMapping;
 import model.Member;
-import model.MemberDao;
+import model.MemberMybatisDao;
 // /member/* =>http://localhost:8080/jspstudy2/member/이후의 어떤 요청이
 //				들어와도 MemberController 서블릿이 호출됨
 @WebServlet(urlPatterns= {"/member/*"},
 		initParams= {@WebInitParam(name="view",value="/view/")})
 //http://localhost:8080/jspstudy2/member/loginForm
 public class MemberController extends MskimRequestMapping{
-	private MemberDao dao = new MemberDao();
+	private MemberMybatisDao dao = new MemberMybatisDao();
 	
 	//로그인 검증. id 파라미터와 로그인정보 검증
 	public String loginIdCheck(HttpServletRequest request, 
@@ -371,7 +371,7 @@ public class MemberController extends MskimRequestMapping{
 		public String idchk(HttpServletRequest request,
 				HttpServletResponse response) throws Exception {
 			String id = request.getParameter("id");
-			Member mem = new MemberDao().selectOne(id);
+			Member mem = dao.selectOne(id);
 			String msg=null;
 			boolean able = true;
 			if(mem == null) {

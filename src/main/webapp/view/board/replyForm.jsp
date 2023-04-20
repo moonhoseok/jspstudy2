@@ -25,10 +25,17 @@
 <tr><th>제목</th><td><input type="text" name="title"
 			value="RE:${board.title }" class="w3-input"></td></tr>
 	<tr><th>내용</th>
-		<td><textarea name="content" rows="15" class="w3-input"></textarea> </td></tr>
+		<td><textarea name="content" rows="15" class="w3-input" id="content"></textarea>
+		<script>
+			CKEDITOR.replace("content",{
+			filebrowserImageUploadUrl : "imgupload"
+			})
+		</script>
+		</td>
+	</tr>
 	<tr><td colspan="2" class="w3-center">
 	<a href="javascript:document.f.submit()">[답변등록]</a></td></tr>
-</table>
+</table>         
 </div>
 </form>
 

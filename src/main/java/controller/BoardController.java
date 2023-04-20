@@ -16,12 +16,15 @@ import gdu.mskim.MskimRequestMapping;
 import gdu.mskim.RequestMapping;
 import model.Board;
 import model.BoardDao;
+import model.Comment;
+import model.CommentDao;
 
 @WebServlet(urlPatterns= {"/board/*"},
 initParams= {@WebInitParam(name="view",value="/view/")})
 
 public class BoardController extends MskimRequestMapping{
 	private BoardDao dao = new BoardDao();
+	private CommentDao cdao = new CommentDao();
 	
 	@RequestMapping("writeForm")
 	public String writeForm(HttpServletRequest request, 
@@ -156,6 +159,7 @@ public class BoardController extends MskimRequestMapping{
 	 		case "3" :
 	 			boardName = "QnA"; break; 
 	 	}
+	 	//가짜 번호
 	 	int boardnum = boardcount - (pageNum - 1) * limit; 
 	 	request.setAttribute("boardName", boardName);
 	 	request.setAttribute("boardcount", boardcount);
@@ -182,14 +186,17 @@ public class BoardController extends MskimRequestMapping{
 			HttpServletResponse response ) {
 		//1
 		int num = Integer.parseInt(request.getParameter("num"));
+		String readcnt = request.getParameter("readcnt");
 		String boardid = (String)request.getSession().getAttribute("boardid");
 		if(boardid ==null) boardid = "1";
 		//2
 		BoardDao dao = new BoardDao();
 		// b : board테이블에 num(조회하고자하는 게시물 번호)에 해당하는 레코드를 저장
 		Board b = dao.selectOne(num);
+		if(readcnt ==null || !readcnt.equals("f")) {
+			dao.readcntAdd(num);
+		}
 		//3
-		dao.readcntAdd(num);
 		request.setAttribute("boardid", boardid);
 		request.setAttribute("num", num);
 		request.setAttribute("b", b);
@@ -199,7 +206,11 @@ public class BoardController extends MskimRequestMapping{
 		case "3" : boardName = "QnA"; break;
 		}
 		request.setAttribute("boardName", boardName);
+		// 댓글목록 화면에 전달
+		List<Comment> commlist = cdao.list(num);
+		request.setAttribute("commlist", commlist);
 		return "board/info";
+		
 	}
 	
 	/*	1. 원글의 num을 파라미터 저장 : num 원글의 게시물 번호
@@ -400,6 +411,66 @@ public class BoardController extends MskimRequestMapping{
 	 	}
 	 	request.setAttribute("msg", msg);
 	 	request.setAttribute("url", url);
+		return "alert";
+	}
+	@RequestMapping("imgupload")
+	public String imgupload (HttpServletRequest request,  
+			HttpServletResponse response ) {
+		String path = request.getServletContext().getRealPath("/")
+				+"/upload/imgfile/";
+		File f = new File(path);
+		if(!f.exists()) f.mkdirs();
+		MultipartRequest multi = null;
+		try {
+			multi = new MultipartRequest(request,path,10*1024*1024,"utf-8");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// ckeditor에서 file의 이름이 upload 임
+		String fileName = multi.getFilesystemName("upload");
+		request.setAttribute("fileName", fileName);
+		
+		return "ckeditor";
+	}
+	@RequestMapping("comment")
+	public String comment(HttpServletRequest request,  
+			HttpServletResponse response) {
+		try {
+			request.setCharacterEncoding("utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		// num : 등록한 해당 게시글 번호
+		int num = Integer.parseInt(request.getParameter("num"));
+		String url = "info?num="+num+"&readcnt=f";
+		// 파라미터값 Comment 객체에 저장
+		Comment c = new Comment();
+		c.setNum(num);
+		c.setWriter(request.getParameter("writer"));
+		c.setContent(request.getParameter("content"));
+		int seq = cdao.maxseq(num); //num에 해당하는 최대 seq 컬럼의 값
+		// 나의 번호는 현재 seq보다 1커야함
+		c.setSeq(++seq);
+		if(cdao.insert(c)) { //comment 테이블에 insert
+			return "redirect:"+url;
+		}
+		request.setAttribute("msg", "답글 등록시 오류발생");
+		request.setAttribute("url", url);
+		return "alert";
+	}
+	
+	@RequestMapping("commdel")
+	public String commdel(HttpServletRequest request,  
+			HttpServletResponse response) {
+		int num = Integer.parseInt(request.getParameter("num"));
+		int seq = Integer.parseInt(request.getParameter("seq"));
+		String url = "info?num="+num+"&readcnt=f";
+		if(cdao.delete(num,seq)) {
+			return "redirect:"+url;
+		}
+		request.setAttribute("msg", "삭제 실패");
+		request.setAttribute("url", url);
+		
 		return "alert";
 	}
 }

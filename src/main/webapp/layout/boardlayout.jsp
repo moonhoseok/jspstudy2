@@ -63,11 +63,11 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
     	<i class="fa fa-remove fa-fw"></i>&nbsp; Close Menu</a>
     <a href="${path }/member/main" class="w3-bar-item w3-button w3-padding" >
     	<i class="fa fa-users fa-fw"></i>&nbsp; 회원관리</a>
-    <a href="${path}/board/list?boardid=1" class="w3-bar-item w3-button w3-padding w3-blue" id="d">
+    <a href="${path}/board/list?boardid=1" class="w3-bar-item w3-button w3-padding <c:if test='${empty boardid || boardid ==1 }'>w3-blue</c:if>" >
     	<i class="fa fa-eye fa-fw"></i>&nbsp; 공지사항</a>
-    <a href="${path}/board/list?boardid=2" class="w3-bar-item w3-button w3-padding" id="d">
+    <a href="${path}/board/list?boardid=2" class="w3-bar-item w3-button w3-padding <c:if test='${boardid ==2 }'>w3-blue</c:if>" >
     	<i class="fa fa-users fa-fw"></i>&nbsp; 자유게시판</a>
-    <a href="${path}/board/list?boardid=3" class="w3-bar-item w3-button w3-padding" id="d">
+    <a href="${path}/board/list?boardid=3" class="w3-bar-item w3-button w3-padding <c:if test='${boardid ==3 }'>w3-blue</c:if>" >
     	<i class="fa fa-bullseye fa-fw"></i>&nbsp; QnA</a>
   </div>
 </nav>

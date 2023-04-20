@@ -35,8 +35,16 @@
 	<input type="password" name="pass" class="w3-input"></td></tr>
 <tr><td>제목</td><td>
 	<input type="text" name="title" value="${b.title}" class="w3-input"></td></tr>
-<tr><td>내용</td><td>
-	<textarea rows="15" name="content" class="w3-input" >${b.content}</textarea></td></tr>
+<tr><td>내용</td>
+	<td>
+	<textarea rows="15" name="content" class="w3-input" id="content">${b.content}</textarea>
+		<script>
+			CKEDITOR.replace("content",{
+			filebrowserImageUploadUrl : "imgupload"
+			})
+		</script>
+	</td>
+</tr>
 <tr><td>첨부파일</td><td style="text-align: left;">
 <c:if test="${!empty b.file1 }">
 	<div id="file_desc">${b.file1}

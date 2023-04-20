@@ -38,8 +38,13 @@
 			&nbsp;&nbsp;&nbsp;&nbsp;
 		</c:forEach>ㄴ	
 	</c:if>
-		<a href="info?num=
-		${b.num}">${b.title}</a>
+		<a href="info?num=${b.num}">${b.title}</a>
+		<%--댓글의 갯수 뱃지 --%>
+		<c:if test="${b.commcnt>0 }">
+			<a href="info?num=${b.num }#comment"> <%--#comment 부분으로 이동 --%>
+				<span class="w3-badge w3-blue w3-tiny">${b.commcnt}</span>
+			</a>
+		</c:if>
 	</td>
 	<td>${b.writer}</td>
 	
