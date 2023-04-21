@@ -15,7 +15,7 @@ import com.oreilly.servlet.MultipartRequest;
 import gdu.mskim.MskimRequestMapping;
 import gdu.mskim.RequestMapping;
 import model.Board;
-import model.BoardDao;
+import model.BoardMybatisDao;
 import model.Comment;
 import model.CommentDao;
 
@@ -23,7 +23,7 @@ import model.CommentDao;
 initParams= {@WebInitParam(name="view",value="/view/")})
 
 public class BoardController extends MskimRequestMapping{
-	private BoardDao dao = new BoardDao();
+	private BoardMybatisDao dao = new BoardMybatisDao();
 	private CommentDao cdao = new CommentDao();
 	
 	@RequestMapping("writeForm")
@@ -102,6 +102,11 @@ public class BoardController extends MskimRequestMapping{
 	@RequestMapping("list")
 	public String list (HttpServletRequest request,  
 			HttpServletResponse response ) {
+		try {
+			request.setCharacterEncoding("utf-8");
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 		if(request.getParameter("boardid") != null){
 	 		//session에 게시판 종류 정보 등록
 	 		request.getSession().setAttribute("boardid",
@@ -114,13 +119,26 @@ public class BoardController extends MskimRequestMapping{
 	 	try{
 	 		pageNum = Integer.parseInt(request.getParameter("pageNum"));
 	 	}catch (NumberFormatException e){}
-	 	
+	 	String column = request.getParameter("column");
+	 	String find = request.getParameter("find");
+	 	/*
+	 	 * column,find 파라미터중 한개만 존재하는 경우 두개의 파라미터값은
+	 	 * 없는상태로 설정
+	 	 */
+	 	if(column==null || column.trim().equals("")) {
+	 		column = null;
+	 		find = null;
+	 	}
+	 	if(find==null || find.trim().equals("")) {
+	 		column = null;
+	 		find = null;
+	 	}
 	 	int limit = 10; //한페이지에 보여질 게시글 건수
 	 	// boardcount : 게시물 종류별 게시물 등록건수
-	 	BoardDao dao = new BoardDao();
-	 	int boardcount = dao.boardCount(boardid); //전체 게시물등록 건수리턴
+	 	
+	 	int boardcount = dao.boardCount(boardid,column,find); //전체 게시물등록 건수리턴
 	 	// list : 현재 페이지에 보여질 게시글 목록
-	 	List<Board> list = dao.list(boardid,pageNum,limit);
+	 	List<Board> list = dao.list(boardid,pageNum,limit,column,find);
 	 	/*
 	 		maxpage : 필요한 페이지 갯수
 	 		게시물건수  필요한 페이지
@@ -190,7 +208,7 @@ public class BoardController extends MskimRequestMapping{
 		String boardid = (String)request.getSession().getAttribute("boardid");
 		if(boardid ==null) boardid = "1";
 		//2
-		BoardDao dao = new BoardDao();
+	
 		// b : board테이블에 num(조회하고자하는 게시물 번호)에 해당하는 레코드를 저장
 		Board b = dao.selectOne(num);
 		if(readcnt ==null || !readcnt.equals("f")) {
@@ -223,7 +241,6 @@ public class BoardController extends MskimRequestMapping{
 	public String replyForm (HttpServletRequest request,  
 			HttpServletResponse response ) {
 		int num = Integer.parseInt(request.getParameter("num"));//파라미터값 읽기
-		BoardDao dao = new BoardDao();
 		Board board = dao.selectOne(num); // 원글정보
 		request.setAttribute("board", board);
 		return "board/replyForm";
@@ -337,7 +354,7 @@ public class BoardController extends MskimRequestMapping{
 			b.setFile1(multi.getParameter("file2"));
 		}
 		//2. 비번검증
-		BoardDao dao = new BoardDao();
+	
 		Board dbboard = dao.selectOne(b.getNum());
 		String msg = "비밀번호틀림";
 		String url = "updateForm?num="+b.getNum();

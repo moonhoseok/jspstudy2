@@ -11,7 +11,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 public class MybatisConnection {
 	private MybatisConnection() {}
 	private static SqlSessionFactory sqlMap;
-	static {
+	// static 초기화 블럭 : static 변수의 초기화 담당
+	static { //MybatisConnection 클래스가 메모리에 로드될때 실행되는 블럭
 		String resource = "model/mapper/mybatis-config.xml";
 		InputStream input = null;
 		try {
