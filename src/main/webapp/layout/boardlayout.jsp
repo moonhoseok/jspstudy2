@@ -93,11 +93,30 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
   <footer class="w3-container w3-padding-16 w3-light-grey">
     <h4>구디아카데미</h4>
     <p>Powered by <a href="https://www.gdu.co.kr" target="_blank">구디</a></p>
+ 
+	<hr>
+	<div>
+		<span id="si">
+			<select name="si" onchange="getText('si')">
+				<option value="">시도를 선택하세요</option>
+			</select>
+		</span>
+		<span id="gu">
+			<select name="gu" onchange="getText('gu')">
+				<option value="">시도를 선택하세요</option>
+			</select>
+		</span>
+		<span id="dong">
+			<select name="dong" onchange="getText('dong')">
+				<option value="">시도를 선택하세요</option>
+			</select>
+		</span>
+	</div> 
   </footer>
 
   <!-- End page content -->
 </div>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script>
 // Get the Sidebar
 var mySidebar = document.getElementById("mySidebar");
@@ -125,6 +144,37 @@ function w3-blue(){
 	overlatBg.style.display === 'blue'
 }
 </script>
-
+<script type="text/javascript">
+	$(function(){
+		let divid;
+		let is;
+		$.ajax({
+			url : "${path}/ajax/select",
+			success : function(arr){
+				$.each(arr, function(i,item){
+					$("select[name=si]").append(function(){
+						return "<option>" + item+"</option>"
+					})
+				})
+			},
+			error : function(e){
+				alert("서버오류 :"+ e.status)
+			}
+		})
+	})
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
