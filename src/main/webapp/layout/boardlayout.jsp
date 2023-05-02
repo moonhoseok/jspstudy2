@@ -70,6 +70,10 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
     <a href="${path}/board/list?boardid=3" class="w3-bar-item w3-button w3-padding <c:if test='${boardid ==3 }'>w3-blue</c:if>" >
     	<i class="fa fa-bullseye fa-fw"></i>&nbsp; QnA</a>
   </div>
+  <%-- ajax를 이용하여 환율정보 출력 --%>
+  <div class="w3-content">
+  	<div id="exchange" ></div>
+  </div>
 </nav>
 
 
@@ -103,12 +107,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 		</span>
 		<span id="gu">
 			<select name="gu" onchange="getText('gu')">
-				<option value="">시도를 선택하세요</option>
+				<option value="">구를 선택하세요</option>
 			</select>
 		</span>
 		<span id="dong">
 			<select name="dong" onchange="getText('dong')">
-				<option value="">시도를 선택하세요</option>
+				<option value="">동을 선택하세요</option>
 			</select>
 		</span>
 	</div> 
@@ -140,18 +144,27 @@ function w3_close() {
   mySidebar.style.display = "none";
   overlayBg.style.display = "none";
 }
-function w3-blue(){
-	overlatBg.style.display === 'blue'
+function change(){
+	var menu = document.getElementById("menu")
+	menu.style.background = "blue"
 }
+
 </script>
 <script type="text/javascript">
 	$(function(){
+		// ajax을 이용하여 환율데이터 조회하기
+		exchangeRate()
+		// exchangeRate() 함수 만들어 이용
+		// ajax를 이용하여 
 		let divid;
 		let is;
 		$.ajax({
 			url : "${path}/ajax/select",
-			success : function(arr){
+			success : function(data){
+				// data : ["서울특별시", "부산광역시".....]
+				let arr = JSON.parse(data)
 				$.each(arr, function(i,item){
+					// <select name = "si">인 태그 선택 
 					$("select[name=si]").append(function(){
 						return "<option>" + item+"</option>"
 					})
@@ -162,6 +175,54 @@ function w3-blue(){
 			}
 		})
 	})
+	function getText(name){ // si : 시도 선택 , gu 구군 선택
+		let city = $("select[name='si']").val()
+		let gun = $("select[name='gu']").val()
+		let disname;
+		let toptext = "구군을 선택하세요"
+		let params = ''
+		if(name == 'si'){
+			params = "si="+ city.trim()
+			disname = "gu"
+		}else if (name=='gu'){
+			params = "si="+ city.trim()+"&gu="+gun.trim()
+			disname = "dong"
+			toptext = "동리를 선택하세요"
+		}else{
+			return 
+		}
+		$.ajax({
+			url : "${path}/ajax/select",
+			type : "POST",
+			data : params,
+			success : function(data){
+				console.log(data)
+				let arr = JSON.parse(data)
+				$("select[name=" + disname + "] option").remove()
+				$("select[name=" + disname + "]").append(function(){
+					return "<option value=''>"+toptext+"</option>"
+				})
+				$.each(arr,function(i,item){
+					$("select[name=" + disname + "]").append(function(){
+						return "<option>"+item+"</option>"
+				})
+			})
+		},
+			error : function(e){
+			alert("서버오류 : " + e.status)
+			}
+		})
+	}
+	function exchangeRate(){
+		$.ajax("${path}/ajax/exchange",{
+			success:function(data){
+				$("#exchange").html(data)
+			},
+			error : function(e){
+				alert("환율 조회시 서버 오류" + e.status)
+			}
+		})
+	}
 </script>
 </body>
 </html>
