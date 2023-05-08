@@ -65,5 +65,34 @@ public interface BoardMapper {
 	int update(Board board);
 	@Delete("delete from board where num=#{num}")
 	int delete(int num);
-
+	
+	// [{"writer": "홍길동", "cnt" : 6},{"writer": "김삿갓", "cnt" : 5}]
+	@Select("select writer, count(*) cnt from board WHERE writer IS not null "
+			+ " group by writer "
+			+ " having count(*) > 1 order by cnt desc")
+	List<Map<String, Object>> graph();
+		
+	// [{regdate=2023-05-08, cnt=4},{regdate=2023-05-08, cnt=4}...]
+	@Select(" SELECT date_format(regdate,'%Y-%m-%d') regdate, COUNT(*) cnt"
+			+ " FROM board"
+			+ " GROUP BY date_format(regdate,'%Y-%m-%d')"
+			+ " ORDER BY 1 DESC "
+			+ " LIMIT 0,7")
+	List<Map<String, Object>> graph2();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
